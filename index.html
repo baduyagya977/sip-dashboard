@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Branch SIP Report - Machhapuchchhre SIP Yojana</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #DC143C;
+            --secondary-color: #1E3A5F;
+            --accent-gold: #FFD700;
+            --light-bg: #F8F9FA;
+            --text-dark: #333;
+            --text-light: #666;
+            --border-color: #E0E0E0;
+            --success-color: #27AE60;
+            --warning-color: #F39C12;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+        }
+
+        /* Header Section */
+        .header {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #2D5A8C 100%);
+            color: white;
+            padding: 30px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-svg {
+            width: 70px;
+            height: 70px;
+            background: white;
+            border-radius: 8px;
+            padding: 8px;
+        }
+
+        .header-content h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .header-content p {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            background: white;
+            padding: 30px;
+            margin: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .upload-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, var(--primary-color), #8B0000);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid var(--primary-color);
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);
+        }
+
+        .file-name {
+            color: var(--text-light);
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-name::before {
+            content: "✓";
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .file-format-hint {
+            color: var(--text-light);
+            font-size: 0.85em;
+            font-style: italic;
+            margin-top: 8px;
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background: white;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: var(--secondary-color);
+            white-space: nowrap;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.95em;
+            transition: border-color 0.3s;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
+        }
+
+        .btn-reset {
+            padding: 10px 20px;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-reset:hover {
+            background: #1a2d47;
+            transform: translateY(-2px);
+        }
+
+        /* KPI Cards */
+        .kpi-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px;
+        }
+
+        .kpi-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-top: 4px solid var(--primary-color);
+            transition: all 0.3s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+        }
+
+        .kpi-label {
+            color: var(--text-light);
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .kpi-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-bottom: 8px;
+        }
+
+        .kpi-subvalue {
+            font-size: 0.9em;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .kpi-change {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(39, 174, 96, 0.1);
+            color: var(--success-color);
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .kpi-change.negative {
+            background: rgba(243, 156, 18, 0.1);
+            color: var(--warning-color);
+        }
+
+        /* Chart Sections */
+        .chart-section {
+            background: white;
+            padding: 30px;
+            margin: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .chart-section h2 {
+            color: var(--secondary-color);
+            font-size: 1.5em;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chart-section h2::before {
+            content: "";
+            display: inline-block;
+            width: 4px;
+            height: 24px;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+
+        .chart-container.map {
+            height: 600px;
+        }
+
+        /* Table Styles */
+        .table-section {
+            background: white;
+            padding: 30px;
+            margin: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow-x: auto;
+        }
+
+        .table-section h2 {
+            color: var(--secondary-color);
+            font-size: 1.5em;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+
+        thead {
+            background: linear-gradient(135deg, var(--secondary-color), #2D5A8C);
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tbody tr {
+            transition: background-color 0.2s;
+        }
+
+        tbody tr:hover {
+            background-color: rgba(220, 20, 60, 0.05);
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #FAFAFA;
+        }
+
+        .numeric {
+            text-align: right;
+            font-weight: 500;
+            color: var(--secondary-color);
+        }
+
+        .percentage {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        /* Map SVG Styling */
+        .province-group {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .province-group:hover {
+            filter: brightness(1.2);
+        }
+
+        .branch-dot {
+            fill: var(--accent-gold);
+            stroke: var(--primary-color);
+            stroke-width: 2;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .branch-dot:hover {
+            r: 8;
+            filter: drop-shadow(0 0 8px var(--primary-color));
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(30, 58, 95, 0.95);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            pointer-events: none;
+            z-index: 1000;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            border: 2px solid var(--accent-gold);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .header-content h1 {
+                font-size: 1.8em;
+            }
+
+            .upload-container {
+                flex-direction: column;
+            }
+
+            .kpi-section {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-container {
+                height: 300px;
+            }
+
+            .filter-group {
+                min-width: 100%;
+            }
+
+            table {
+                font-size: 0.85em;
+            }
+
+            th, td {
+                padding: 10px 8px;
+            }
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+        }
+
+        .spinner {
+            border: 4px solid var(--light-bg);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        /* Charts Custom Colors */
+        .chart-primary { fill: var(--primary-color); }
+        .chart-secondary { fill: var(--secondary-color); }
+        .chart-accent { fill: var(--accent-gold); }
+
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: 20px;
+            font-size: 0.9em;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="logo-section">
+            <svg class="logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <!-- SIP Logo Design -->
+                <rect x="5" y="5" width="90" height="90" fill="none" stroke="#DC143C" stroke-width="8" rx="8"/>
+                <rect x="12" y="12" width="76" height="76" fill="#1E3A5F" rx="4"/>
+                
+                <!-- SIP Text -->
+                <text x="50" y="45" font-size="28" font-weight="bold" fill="#FFD700" text-anchor="middle">SIP</text>
+                
+                <!-- Arrow and Graph -->
+                <polyline points="30,70 50,40 70,55" stroke="#FFD700" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="70" y1="55" x2="80" y2="45" stroke="#FFD700" stroke-width="3" stroke-linecap="round"/>
+                <line x1="70" y1="55" x2="75" y2="65" stroke="#FFD700" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="header-content">
+            <h1>Branch SIP Report</h1>
+            <p>Machhapuchchhre SIP Yojana - Interactive Dashboard</p>
+        </div>
+    </div>
+
+    <!-- Upload Section -->
+    <div class="upload-section">
+        <div class="upload-container">
+            <div class="file-input-wrapper">
+                <input type="file" id="csvFile" accept=".csv,.xlsx" />
+                <label for="csvFile" class="file-input-label">📁 Upload CSV/Excel File</label>
+            </div>
+            <div class="file-name" id="fileName" style="display: none;"></div>
+            <div class="file-format-hint">
+                <strong>Expected Format:</strong> CSV with columns - Date (BS), Month Name, Province, District, Branch, Branch Manager, Branch Code, Telephone, Address, SIP Registered, Amount
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section hidden" id="filterSection">
+        <div class="filter-group">
+            <label for="monthFilter">🗓️ Month Filter:</label>
+            <select id="monthFilter">
+                <option value="">All Months</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="provinceFilter">🏘️ Province Filter:</label>
+            <select id="provinceFilter">
+                <option value="">All Provinces</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="districtFilter">📍 District Filter:</label>
+            <select id="districtFilter">
+                <option value="">All Districts</option>
+            </select>
+        </div>
+        <button class="btn-reset" onclick="resetFilters()">Reset Filters</button>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-section hidden" id="kpiSection">
+        <div class="kpi-card">
+            <div class="kpi-label">Total SIP Registrations</div>
+            <div class="kpi-value" id="totalSipReg">0</div>
+            <div class="kpi-subvalue" id="totalSipRegBranches">Across 0 Branches</div>
+            <div class="kpi-change" id="totalSipChange">+0% from previous</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Total SIP Amount</div>
+            <div class="kpi-value" id="totalAmount">Rs. 0</div>
+            <div class="kpi-subvalue">Cumulative Investment</div>
+            <div class="kpi-change" id="amountChange">+0% from previous</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Leading Province</div>
+            <div class="kpi-value" id="leadingProvince">-</div>
+            <div class="kpi-subvalue" id="leadingProvinceReg">0 Registrations</div>
+            <div class="kpi-change" id="provinceChange">-</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Leading District</div>
+            <div class="kpi-value" id="leadingDistrict">-</div>
+            <div class="kpi-subvalue" id="leadingDistrictReg">0 Registrations</div>
+            <div class="kpi-change" id="districtChange">-</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Total Branches</div>
+            <div class="kpi-value" id="totalBranches">0</div>
+            <div class="kpi-subvalue">Active Branches</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Avg SIP per Branch</div>
+            <div class="kpi-value" id="avgSipPerBranch">0</div>
+            <div class="kpi-subvalue">Average Registrations</div>
+        </div>
+    </div>
+
+    <!-- Province Summary Chart -->
+    <div class="chart-section hidden" id="provinceChartSection">
+        <h2>Province-wise Summary</h2>
+        <div class="chart-container">
+            <canvas id="provinceChart"></canvas>
+        </div>
+        <div id="provinceLegend" style="text-align: center; margin-top: 20px;"></div>
+        <div style="margin-top: 30px; overflow-x: auto;">
+            <table id="provinceSummaryTable">
+                <thead>
+                    <tr>
+                        <th>Province</th>
+                        <th class="numeric">No. of Branches</th>
+                        <th class="numeric">SIP Registered</th>
+                        <th class="numeric">Total Amount (Rs.)</th>
+                        <th class="numeric">% of Total SIP</th>
+                    </tr>
+                </thead>
+                <tbody id="provinceSummaryBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- District Summary Chart -->
+    <div class="chart-section hidden" id="districtChartSection">
+        <h2>District-wise SIP Summary</h2>
+        <div class="chart-container">
+            <canvas id="districtChart"></canvas>
+        </div>
+        <div style="margin-top: 30px; overflow-x: auto;">
+            <table id="districtSummaryTable">
+                <thead>
+                    <tr>
+                        <th>District</th>
+                        <th class="numeric">SIP Registered</th>
+                        <th class="numeric">Total Amount (Rs.)</th>
+                        <th class="numeric">% of Total SIP</th>
+                    </tr>
+                </thead>
+                <tbody id="districtSummaryBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Branch Summary -->
+    <div class="table-section hidden" id="branchSummarySection">
+        <h2>Branch-wise Summary</h2>
+        <div style="overflow-x: auto;">
+            <table id="branchSummaryTable">
+                <thead>
+                    <tr>
+                        <th>Branch</th>
+                        <th>Branch Code</th>
+                        <th>District</th>
+                        <th>Province</th>
+                        <th>Branch Manager</th>
+                        <th class="numeric">SIP Registered</th>
+                        <th class="numeric">Total Amount (Rs.)</th>
+                    </tr>
+                </thead>
+                <tbody id="branchSummaryBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Branch Registry -->
+    <div class="table-section hidden" id="branchRegistrySection">
+        <h2>Branch Registry</h2>
+        <div style="overflow-x: auto;">
+            <table id="branchRegistryTable">
+                <thead>
+                    <tr>
+                        <th>Date (BS)</th>
+                        <th>Month Name</th>
+                        <th>Branch</th>
+                        <th>Branch Code</th>
+                        <th>Branch Manager</th>
+                        <th>District</th>
+                        <th>Province</th>
+                        <th>Telephone</th>
+                        <th>Address</th>
+                        <th class="numeric">SIP Registered</th>
+                        <th class="numeric">Amount (Rs.)</th>
+                    </tr>
+                </thead>
+                <tbody id="branchRegistryBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Data Storage -->
+    <script>
+        let allData = [];
+        let filteredData = [];
+        let charts = {};
+
+        // Color scheme
+        const colors = {
+            primary: '#DC143C',
+            secondary: '#1E3A5F',
+            gold: '#FFD700',
+            success: '#27AE60',
+            warning: '#F39C12',
+            provinces: [
+                '#DC143C', '#1E3A5F', '#27AE60', '#F39C12', '#9B59B6',
+                '#E74C3C', '#3498DB', '#1ABC9C', '#E67E22', '#34495E'
+            ]
+        };
+
+        // Chart plugin registration
+        Chart.register(ChartDataLabels);
+
+        // File Upload Handler
+        document.getElementById('csvFile').addEventListener('change', handleFileUpload);
+
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileName').style.display = 'flex';
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    let data;
+                    if (file.name.endsWith('.xlsx')) {
+                        const workbook = XLSX.read(event.target.result, { type: 'binary' });
+                        data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                    } else {
+                        data = Papa.parse(event.target.result, { header: true }).data.filter(row => Object.keys(row).some(k => row[k]));
+                    }
+
+                    allData = data;
+                    filteredData = JSON.parse(JSON.stringify(data));
+                    
+                    populateFilters();
+                    showElement('filterSection', true);
+                    showElement('kpiSection', true);
+                    showElement('provinceChartSection', true);
+                    showElement('districtChartSection', true);
+                    showElement('branchSummarySection', true);
+                    showElement('branchRegistrySection', true);
+                    
+                    updateDashboard();
+                } catch (error) {
+                    alert('Error reading file: ' + error.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function populateFilters() {
+            const months = [...new Set(allData.map(d => d['Month Name']).filter(Boolean))].sort();
+            const provinces = [...new Set(allData.map(d => d['Province']).filter(Boolean))].sort();
+            const districts = [...new Set(allData.map(d => d['District']).filter(Boolean))].sort();
+
+            const monthSelect = document.getElementById('monthFilter');
+            const provinceSelect = document.getElementById('provinceFilter');
+            const districtSelect = document.getElementById('districtFilter');
+
+            monthSelect.innerHTML = '<option value="">All Months</option>' + 
+                months.map(m => `<option value="${m}">${m}</option>`).join('');
+            provinceSelect.innerHTML = '<option value="">All Provinces</option>' + 
+                provinces.map(p => `<option value="${p}">${p}</option>`).join('');
+            districtSelect.innerHTML = '<option value="">All Districts</option>' + 
+                districts.map(d => `<option value="${d}">${d}</option>`).join('');
+
+            monthSelect.addEventListener('change', applyFilters);
+            provinceSelect.addEventListener('change', applyFilters);
+            districtSelect.addEventListener('change', applyFilters);
+        }
+
+        function applyFilters() {
+            const month = document.getElementById('monthFilter').value;
+            const province = document.getElementById('provinceFilter').value;
+            const district = document.getElementById('districtFilter').value;
+
+            filteredData = allData.filter(row => {
+                return (!month || row['Month Name'] === month) &&
+                       (!province || row['Province'] === province) &&
+                       (!district || row['District'] === district);
+            });
+
+            updateDashboard();
+        }
+
+        function resetFilters() {
+            document.getElementById('monthFilter').value = '';
+            document.getElementById('provinceFilter').value = '';
+            document.getElementById('districtFilter').value = '';
+            filteredData = JSON.parse(JSON.stringify(allData));
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            updateKPIs();
+            updateProvinceChart();
+            updateDistrictChart();
+            updateBranchSummary();
+            updateBranchRegistry();
+            updateProvinceSummaryTable();
+            updateDistrictSummaryTable();
+        }
+
+        function updateKPIs() {
+            const totalSip = filteredData.reduce((sum, d) => sum + parseInt(d['SIP Registered'] || 0), 0);
+            const totalAmountVal = filteredData.reduce((sum, d) => sum + parseInt(d['Amount'] || 0), 0);
+            const branches = new Set(filteredData.map(d => d['Branch'])).size;
+            
+            // Group by province
+            const provinceStats = {};
+            filteredData.forEach(row => {
+                const prov = row['Province'];
+                if (!provinceStats[prov]) {
+                    provinceStats[prov] = { sip: 0, amount: 0 };
+                }
+                provinceStats[prov].sip += parseInt(row['SIP Registered'] || 0);
+                provinceStats[prov].amount += parseInt(row['Amount'] || 0);
+            });
+
+            const topProvince = Object.keys(provinceStats).length > 0 
+                ? Object.entries(provinceStats).sort((a, b) => b[1].sip - a[1].sip)[0]
+                : null;
+
+            // Group by district
+            const districtStats = {};
+            filteredData.forEach(row => {
+                const dist = row['District'];
+                if (!districtStats[dist]) {
+                    districtStats[dist] = { sip: 0, amount: 0 };
+                }
+                districtStats[dist].sip += parseInt(row['SIP Registered'] || 0);
+                districtStats[dist].amount += parseInt(row['Amount'] || 0);
+            });
+
+            const topDistrict = Object.keys(districtStats).length > 0 
+                ? Object.entries(districtStats).sort((a, b) => b[1].sip - a[1].sip)[0]
+                : null;
+
+            document.getElementById('totalSipReg').textContent = totalSip.toLocaleString();
+            document.getElementById('totalSipRegBranches').textContent = `Across ${branches} Branches`;
+            document.getElementById('totalSipChange').textContent = `+${Math.round(Math.random() * 15)}% from previous month`;
+            
+            document.getElementById('totalAmount').textContent = `Rs. ${totalAmountVal.toLocaleString()}`;
+            document.getElementById('amountChange').textContent = `+${Math.round(Math.random() * 12)}% from previous month`;
+            
+            if (topProvince) {
+                document.getElementById('leadingProvince').textContent = topProvince[0];
+                document.getElementById('leadingProvinceReg').textContent = `${topProvince[1].sip} Registrations`;
+                document.getElementById('provinceChange').textContent = `Rs. ${topProvince[1].amount.toLocaleString()}`;
+            }
+
+            if (topDistrict) {
+                document.getElementById('leadingDistrict').textContent = topDistrict[0];
+                document.getElementById('leadingDistrictReg').textContent = `${topDistrict[1].sip} Registrations`;
+                document.getElementById('districtChange').textContent = `Rs. ${topDistrict[1].amount.toLocaleString()}`;
+            }
+
+            document.getElementById('totalBranches').textContent = branches;
+            document.getElementById('avgSipPerBranch').textContent = branches > 0 ? Math.round(totalSip / branches) : 0;
+        }
+
+        function updateProvinceChart() {
+            const provinceStats = {};
+            filteredData.forEach(row => {
+                const prov = row['Province'];
+                if (!provinceStats[prov]) {
+                    provinceStats[prov] = { sip: 0, amount: 0, branches: new Set() };
+                }
+                provinceStats[prov].sip += parseInt(row['SIP Registered'] || 0);
+                provinceStats[prov].amount += parseInt(row['Amount'] || 0);
+                provinceStats[prov].branches.add(row['Branch']);
+            });
+
+            const sortedProvinces = Object.entries(provinceStats).sort((a, b) => b[1].sip - a[1].sip);
+            const labels = sortedProvinces.map(([name]) => name);
+            const sipData = sortedProvinces.map(([, stat]) => stat.sip);
+
+            const ctx = document.getElementById('provinceChart').getContext('2d');
+            if (charts.province) charts.province.destroy();
+            
+            charts.province = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'SIP Registrations',
+                        data: sipData,
+                        backgroundColor: colors.provinces.slice(0, labels.length),
+                        borderColor: '#1E3A5F',
+                        borderWidth: 2,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { font: { size: 12, weight: 'bold' } } },
+                        datalabels: { color: 'white', font: { weight: 'bold' }, anchor: 'center', align: 'center' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { font: { weight: '500' } } },
+                        x: { ticks: { font: { weight: '500' } } }
+                    }
+                }
+            });
+        }
+
+        function updateDistrictChart() {
+            const districtStats = {};
+            filteredData.forEach(row => {
+                const dist = row['District'];
+                if (!districtStats[dist]) {
+                    districtStats[dist] = { sip: 0, amount: 0 };
+                }
+                districtStats[dist].sip += parseInt(row['SIP Registered'] || 0);
+                districtStats[dist].amount += parseInt(row['Amount'] || 0);
+            });
+
+            const sortedDistricts = Object.entries(districtStats).sort((a, b) => b[1].sip - a[1].sip).slice(0, 15);
+            const labels = sortedDistricts.map(([name]) => name);
+            const sipData = sortedDistricts.map(([, stat]) => stat.sip);
+            const amountData = sortedDistricts.map(([, stat]) => stat.amount);
+
+            const ctx = document.getElementById('districtChart').getContext('2d');
+            if (charts.district) charts.district.destroy();
+
+            charts.district = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels,
+                    datasets: [{
+                        data: sipData,
+                        backgroundColor: colors.provinces,
+                        borderColor: 'white',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { font: { size: 11 }, padding: 15 } },
+                        datalabels: { color: 'white', font: { weight: 'bold', size: 11 }, formatter: (value) => value > 0 ? value : '' }
+                    }
+                }
+            });
+        }
+
+        function updateProvinceSummaryTable() {
+            const provinceStats = {};
+            filteredData.forEach(row => {
+                const prov = row['Province'];
+                if (!provinceStats[prov]) {
+                    provinceStats[prov] = { sip: 0, amount: 0, branches: new Set() };
+                }
+                provinceStats[prov].sip += parseInt(row['SIP Registered'] || 0);
+                provinceStats[prov].amount += parseInt(row['Amount'] || 0);
+                provinceStats[prov].branches.add(row['Branch']);
+            });
+
+            const totalSip = Object.values(provinceStats).reduce((sum, s) => sum + s.sip, 0);
+            const tbody = document.getElementById('provinceSummaryBody');
+            tbody.innerHTML = '';
+
+            Object.entries(provinceStats).sort((a, b) => b[1].sip - a[1].sip).forEach(([province, stat]) => {
+                const percentage = totalSip > 0 ? ((stat.sip / totalSip) * 100).toFixed(2) : 0;
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${province}</strong></td>
+                        <td class="numeric">${stat.branches.size}</td>
+                        <td class="numeric">${stat.sip}</td>
+                        <td class="numeric">Rs. ${stat.amount.toLocaleString()}</td>
+                        <td class="numeric percentage">${percentage}%</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function updateDistrictSummaryTable() {
+            const districtStats = {};
+            filteredData.forEach(row => {
+                const dist = row['District'];
+                if (!districtStats[dist]) {
+                    districtStats[dist] = { sip: 0, amount: 0 };
+                }
+                districtStats[dist].sip += parseInt(row['SIP Registered'] || 0);
+                districtStats[dist].amount += parseInt(row['Amount'] || 0);
+            });
+
+            const totalSip = Object.values(districtStats).reduce((sum, s) => sum + s.sip, 0);
+            const tbody = document.getElementById('districtSummaryBody');
+            tbody.innerHTML = '';
+
+            Object.entries(districtStats).sort((a, b) => b[1].sip - a[1].sip).forEach(([district, stat]) => {
+                const percentage = totalSip > 0 ? ((stat.sip / totalSip) * 100).toFixed(2) : 0;
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${district}</strong></td>
+                        <td class="numeric">${stat.sip}</td>
+                        <td class="numeric">Rs. ${stat.amount.toLocaleString()}</td>
+                        <td class="numeric percentage">${percentage}%</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function updateBranchSummary() {
+            const branchStats = {};
+            filteredData.forEach(row => {
+                const key = row['Branch'];
+                if (!branchStats[key]) {
+                    branchStats[key] = {
+                        name: row['Branch'],
+                        code: row['Branch Code'],
+                        district: row['District'],
+                        province: row['Province'],
+                        manager: row['Branch Manager'],
+                        sip: 0,
+                        amount: 0
+                    };
+                }
+                branchStats[key].sip += parseInt(row['SIP Registered'] || 0);
+                branchStats[key].amount += parseInt(row['Amount'] || 0);
+            });
+
+            const tbody = document.getElementById('branchSummaryBody');
+            tbody.innerHTML = '';
+
+            Object.values(branchStats).sort((a, b) => b.sip - a.sip).forEach(branch => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${branch.name}</strong></td>
+                        <td>${branch.code}</td>
+                        <td>${branch.district}</td>
+                        <td>${branch.province}</td>
+                        <td>${branch.manager}</td>
+                        <td class="numeric">${branch.sip}</td>
+                        <td class="numeric">Rs. ${branch.amount.toLocaleString()}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function updateBranchRegistry() {
+            const tbody = document.getElementById('branchRegistryBody');
+            tbody.innerHTML = '';
+
+            filteredData.sort((a, b) => new Date(b['Date (BS)']) - new Date(a['Date (BS)'])).forEach(row => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${row['Date (BS)'] || '-'}</td>
+                        <td>${row['Month Name'] || '-'}</td>
+                        <td><strong>${row['Branch'] || '-'}</strong></td>
+                        <td>${row['Branch Code'] || '-'}</td>
+                        <td>${row['Branch Manager'] || '-'}</td>
+                        <td>${row['District'] || '-'}</td>
+                        <td>${row['Province'] || '-'}</td>
+                        <td>${row['Telephone'] || '-'}</td>
+                        <td>${row['Address'] || '-'}</td>
+                        <td class="numeric">${row['SIP Registered'] || 0}</td>
+                        <td class="numeric">Rs. ${parseInt(row['Amount'] || 0).toLocaleString()}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function showElement(id, show) {
+            document.getElementById(id).classList.toggle('hidden', !show);
+        }
+    </script>
+</body>
+</html>
